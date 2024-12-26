@@ -14,8 +14,13 @@ from includes.constant import metadata_dag_account as metadata
 from includes.utils.transform_date_to_db import transform_data_to_db
 
 
+"""
+    Это вариант с одним таском, вместо трех (extract, transform, load)
+    В остальных файлах остались три эти такси
+    Среднее время выполнения с одним таксом - около 3 секунд
+"""
 @logging_dag
-def extract_file(**kwargs):
+def process_task(**kwargs):
     df: pandas.DataFrame = pd.read_csv(metadata["directory_to_file"], sep=";", dtype=metadata["dtype"])
     df = transform_data_to_db(df, metadata)
 
@@ -39,15 +44,14 @@ with DAG(
         max_active_runs=1,
         tags=["study"],
 ) as dag:
-
     begin_etl = PythonOperator(
         task_id="etl_start",
         python_callable=empty_function
     )
 
-    extract_task = PythonOperator(
-        task_id="etl_extract",
-        python_callable=extract_file,
+    process_task = PythonOperator(
+        task_id="etl_process",
+        python_callable=process_task,
     )
 
     end_etl = PythonOperator(
@@ -55,7 +59,7 @@ with DAG(
         python_callable=empty_function
     )
 
-    begin_etl >> extract_task >> end_etl
+    begin_etl >> process_task >> end_etl
 
 
 if __name__ == "__main__":
