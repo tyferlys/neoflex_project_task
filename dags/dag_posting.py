@@ -53,6 +53,7 @@ with DAG(
         start_date=datetime.datetime(2024, 12, 20),
         schedule_interval=None,
         catchup=False,
+        max_active_runs=1,
         tags=["study"],
 ) as dag:
     begin_etl = PythonOperator(
