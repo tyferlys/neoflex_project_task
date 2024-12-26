@@ -61,12 +61,6 @@ with DAG(
         python_callable=empty_function
     )
 
-    sql_script_init = SQLExecuteQueryOperator(
-        task_id="init_table",
-        sql=metadata["sql_script"],
-        conn_id="project-neoflex-db"
-    )
-
     extract_task = PythonOperator(
         task_id="etl_extract",
         python_callable=extract_file,
@@ -87,7 +81,7 @@ with DAG(
         python_callable=empty_function
     )
 
-    begin_etl >> sql_script_init >> extract_task >> transform_data_task >> load_data_task >> end_etl
+    begin_etl >> extract_task >> transform_data_task >> load_data_task >> end_etl
 
 if __name__ == "__main__":
     run = dag.test()
