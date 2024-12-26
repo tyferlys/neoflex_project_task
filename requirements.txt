@@ -1,4 +1,3 @@
+pandas
 apache-airflow
-psycopg2-binary
-celery
-apache-airflow[celery]
+apache-airflow-providers-postgres
