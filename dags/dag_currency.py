@@ -17,7 +17,7 @@ from includes.utils.transform_date_to_db import transform_data_to_db
 
 @logging_dag
 def process_task(**kwargs):
-    df: pandas.DataFrame = pd.read_csv(metadata["directory_to_file"], sep=";", dtype=metadata["dtype"])
+    df: pandas.DataFrame = pd.read_csv(metadata["directory_to_file"], sep=";", dtype=metadata["dtype"], encoding="cp1252")
     df = transform_data_to_db(df, metadata)
 
     metadata["dtype"] = {key.lower(): value for key, value in metadata["dtype"].items()}
