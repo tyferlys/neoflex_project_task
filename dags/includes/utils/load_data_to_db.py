@@ -6,6 +6,7 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import Table, MetaData
 
+
 """
     Убрал загрузку батчами, сделал всю загрузку за раз
     И также тут фирменная вставляем, если ошибка - обновляем ;)
