@@ -19,6 +19,8 @@ def load_data_to_db(df: pd.DataFrame, metadata: dict, is_append):
     with engine.connect() as connection:
         if not is_append:
             connection.execute(f"TRUNCATE TABLE {metadata["schema"]}.{metadata["tablename"]}")
+            df.to_sql(name=metadata["tablename"], schema=metadata["schema"], con=engine, if_exists="append", index=False)
+            return
 
         df_dict = df.replace({pd.NA: None, pd.NaT: None, float('nan'): None}).to_dict(orient="records")
         insert_stmt = insert(table).values(df_dict)
