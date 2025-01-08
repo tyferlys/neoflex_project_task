@@ -15,18 +15,12 @@ from includes.constant import metadata_dag_posting as metadata
 from includes.utils.transform_date_to_db import transform_data_to_db
 
 
-@logging_dag
 def process_task(**kwargs):
     postgres_hook: PostgresHook = PostgresHook("project-neoflex-db")
     postgres_hook.run(
         "CALL ds.fill_account_balance_f(%(date_fill)s)",
         parameters=kwargs['dag_run'].conf
     )
-
-
-@logging_dag
-def empty_function(**kwargs):
-    pass
 
 
 with DAG(
@@ -42,22 +36,12 @@ with DAG(
         "date_fill": datetime.date.today()
     }
 ) as dag:
-    begin_etl = PythonOperator(
-        task_id="etl_start",
-        python_callable=empty_function
-    )
-
     process_task = PythonOperator(
         task_id="fill_process",
         python_callable=process_task
     )
 
-    end_etl = PythonOperator(
-        task_id="etl_end",
-        python_callable=empty_function
-    )
-
-    begin_etl >> process_task >> end_etl
+    process_task
 
 
 if __name__ == "__main__":

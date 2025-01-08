@@ -6,11 +6,11 @@ CREATE OR REPLACE PROCEDURE ds.fill_account_turnover_f(
 	i_ondate date)
 LANGUAGE 'plpgsql'
 AS $BODY$
+DECLARE
+	time_start_work TIMESTAMP := NOW();
 BEGIN
-	UPDATE logs.dags_logs
-	SET status = 'Начало заполнения витрины account_turnover'
-	WHERE dag_id = 'fill_account_turnover'
-		AND time_start = (SELECT time_start FROM logs.dags_logs WHERE dag_id = 'fill_account_turnover' ORDER BY time_start DESC LIMIT 1);
+	INSERT INTO logs.dags_logs
+	VALUES ('fill_account_turnover_f', time_start_work, NULL, 'Заполнение витрины account_turnover в процессе', NULL);
 
 	DELETE FROM dm.dm_account_turnover_f
 	WHERE on_date = i_OnDate;
@@ -65,20 +65,34 @@ BEGIN
 		ON c.account_rk = d.account_rk;
 
 	UPDATE logs.dags_logs
-	SET status = 'Конец заполнения витрины account_turnover'
-	WHERE dag_id = 'fill_account_turnover'
-		AND time_start = (SELECT time_start FROM logs.dags_logs WHERE dag_id = 'fill_account_turnover' ORDER BY time_start DESC LIMIT 1);
+	SET status = 'Заполнения витрины account_turnover закончилось успешно', time_end = NOW()
+	WHERE dag_id = 'fill_account_turnover_f' AND time_start = time_start_work;
+EXCEPTION
+	WHEN OTHERS THEN
+		PERFORM dblink_exec(
+		    'host=localhost dbname=project_neoflex user=airflow password=airflow',
+		    'INSERT INTO logs.dags_logs
+		     VALUES (''fill_account_turnover_f'', ' || quote_literal(time_start_work) || ', ' || quote_literal(NOW()) || ', ''Заполнение витрины account_turnover закончилось с ошибкой'',' || quote_literal(SQLERRM) ||');'
+		);
+
+		RAISE EXCEPTION 'Ошибка при выполнении процедуры: %', SQLERRM;
 END;
 $BODY$;
 
 ALTER PROCEDURE ds.fill_account_turnover_f(date)
     OWNER TO airflow;
 
+;
+
+
 
 DO $$
 BEGIN
 FOR i IN 0..30 LOOP
+	PERFORM pg_sleep(0.2);
+	RAISE NOTICE 'Итерация %s', i;
 	CALL ds.fill_account_turnover_f('2018-01-01'::date + i);
+	COMMIT;
 END LOOP;
 END;
 $$;
