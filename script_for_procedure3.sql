@@ -7,13 +7,12 @@ CREATE OR REPLACE PROCEDURE ds.fill_f101_round_f(
 LANGUAGE 'plpgsql'
 AS $BODY$
 DECLARE
+	time_start_work TIMESTAMP := NOW();
 	start_date DATE := i_OnDate - INTERVAL '1 month';
 	end_date DATE := i_OnDate - INTERVAL '1 day';
 BEGIN
-	UPDATE logs.dags_logs
-	SET status = 'Начало заполнения витрины f101_round'
-	WHERE dag_id = 'fill_f101_round'
-		AND time_start = (SELECT time_start FROM logs.dags_logs WHERE dag_id = 'fill_f101_round' ORDER BY time_start DESC LIMIT 1);
+	INSERT INTO logs.dags_logs
+	VALUES ('fill_f101_round_f', time_start_work, NULL, 'Заполнение витрины f101_round в процессе', NULL);
 
 	DELETE FROM dm.dm_f101_round_f
 	WHERE from_date = start_date AND to_date = end_date;
@@ -168,12 +167,22 @@ BEGIN
 			b.balance_out_total
 	FROM data_balance b
 	INNER JOIN data_turn t
-		ON b.ledger_accounat = t.ledger_account;
+		ON b.ledger_account = t.ledger_account;
 
 	UPDATE logs.dags_logs
-	SET status = 'Конец заполнения витрины f101_round'
-	WHERE dag_id = 'fill_f101_round'
-		AND time_start = (SELECT time_start FROM logs.dags_logs WHERE dag_id = 'fill_f101_round' ORDER BY time_start DESC LIMIT 1);
+	SET status = 'Заполнения витрины f101_round закончилось успешно', time_end = NOW()
+	WHERE dag_id = 'fill_f101_round_f' AND time_start = time_start_work;
+EXCEPTION
+	WHEN OTHERS THEN
+		PERFORM dblink_exec(
+		    'host=localhost dbname=project_neoflex user=airflow password=airflow',
+		    'INSERT INTO logs.dags_logs
+		     VALUES (''fill_f101_round_f'', ' || quote_literal(time_start_work) || ', ' || quote_literal(NOW()) || ', ''Заполнение витрины f101_round закончилось с ошибкой'',' || quote_literal(SQLERRM) ||');'
+		);
+
+		RAISE EXCEPTION 'Ошибка при выполнении процедуры: %', SQLERRM;
 END;
 $BODY$;
 
+ALTER PROCEDURE ds.fill_f101_round_f(date)
+    OWNER TO airflow;
