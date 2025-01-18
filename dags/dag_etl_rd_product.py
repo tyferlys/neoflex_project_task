@@ -14,6 +14,10 @@ from includes.constant import metadata_dag_etl_product as metadata
 from includes.utils.transform_date_to_db import transform_data_to_db
 
 
+"""
+    Полная перезагрузка была выбрана, потому что предварительно было проверено,
+    что все записи в csv, есть уже в таблице и никакие записи не потеряются при переносе
+"""
 @logging_dag
 def process_task(**kwargs):
     df: pandas.DataFrame = pd.read_csv(metadata["directory_to_file"], sep=",", dtype=metadata["dtype"], encoding="windows-1251")
