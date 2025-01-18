@@ -1,5 +1,49 @@
 import pandas as pd
 
+
+metadata_dag_etl_product = {
+    "tablename": "product",
+    "schema": "rd",
+    "directory_to_file": f"/opt/airflow/source/product_info.csv",
+    "dtype": {
+        "product_rk": pd.Int64Dtype,
+        "product_name": pd.StringDtype,
+        "effective_from_date": pd.StringDtype,
+        "effective_to_date": pd.StringDtype
+    },
+    "list_pk": [],
+    "list_not_null": [],
+    "list_date": ["effective_from_date"],
+    "list_length": {},
+    "sql_script": "sql/sql_ft_balance.sql"
+}
+
+metadata_dag_etl_rd_deal_info = {
+    "tablename": "deal_info",
+    "schema": "rd",
+    "directory_to_file": f"/opt/airflow/source/deal_info.csv",
+    "dtype": {
+        "deal_rk": pd.Int64Dtype,
+        "deal_num": pd.StringDtype,
+        "deal_name": pd.StringDtype,
+        "deal_sum": pd.Int64Dtype,
+        "client_rk": pd.Int64Dtype,
+        "account_rk": pd.Int64Dtype,
+        "agreement_rk": pd.Int64Dtype,
+        "deal_start_date": pd.StringDtype,
+        "department_rk": pd.Int64Dtype,
+        "product_rk": pd.Int64Dtype,
+        "deal_type_cd": pd.StringDtype,
+        "effective_from_date": pd.StringDtype,
+        "effective_to_date": pd.StringDtype
+    },
+    "list_pk": [],
+    "list_not_null": ["deal_rk", "client_rk", "account_rk", "agreement_rk", "effective_from_date", "effective_to_date"],
+    "list_date": ["deal_start_date", "effective_from_date"],
+    "list_length": {},
+    "sql_script": "sql/sql_ft_balance.sql"
+}
+
 metadata_f101_upload = {
     "tablename": "dm_f101_round_f_v2",
     "schema": "dm",
