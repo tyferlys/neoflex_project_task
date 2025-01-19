@@ -1,6 +1,23 @@
 import pandas as pd
 
 
+metadata_dag_dict_currency = {
+    "tablename": "dict_currency",
+    "schema": "dm",
+    "directory_to_file": f"/opt/airflow/source/dict_currency.csv",
+    "dtype": {
+        "currency_cd": pd.StringDtype,
+        "currency_name": pd.StringDtype,
+        "effective_from_date": pd.StringDtype,
+        "effective_to_date": pd.StringDtype
+    },
+    "list_pk": [],
+    "list_not_null": [],
+    "list_date": ["effective_from_date"],
+    "list_length": {},
+    "sql_script": "sql/sql_ft_balance.sql"
+}
+
 metadata_dag_etl_product = {
     "tablename": "product",
     "schema": "rd",
